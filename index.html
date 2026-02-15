@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduManager - Gestionnaire Scolaire</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <!-- Page de connexion -->
+    <div id="loginPage" class="auth-page">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1>EduManager</h1>
+                <p>Votre gestionnaire scolaire personnel</p>
+            </div>
+
+            <div id="loginForm" class="auth-form">
+                <h2>Connexion</h2>
+                <input type="email" id="loginEmail" placeholder="Email" class="input">
+                <input type="password" id="loginPassword" placeholder="Mot de passe" class="input">
+                <button onclick="login()" class="btn btn-primary">Se connecter</button>
+                <p style="text-align: center; margin-top: 12px;">
+                    <a href="#" onclick="resetPassword()" style="color: var(--blue); text-decoration: none; font-size: 14px;">Mot de passe oublié ?</a>
+                </p>
+                <p class="auth-switch">
+                    Pas encore de compte ? 
+                    <a href="#" onclick="showRegister()">S'inscrire</a>
+                </p>
+            </div>
+
+            <div id="registerForm" class="auth-form" style="display: none;">
+                <h2>Inscription</h2>
+                <input type="text" id="registerNom" placeholder="Nom" class="input">
+                <input type="text" id="registerPrenom" placeholder="Prénom" class="input">
+                <input type="email" id="registerEmail" placeholder="Email" class="input">
+                <input type="password" id="registerPassword" placeholder="Mot de passe" class="input">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="emailNotifications">
+                    <label for="emailNotifications">Recevoir les alertes par email</label>
+                </div>
+                <button onclick="register()" class="btn btn-success">Créer mon compte</button>
+                <p class="auth-switch">
+                    Déjà un compte ? 
+                    <a href="#" onclick="showLogin()">Se connecter</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application principale -->
+    <div id="mainApp" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>EduManager</h1>
+                    <p id="userGreeting"></p>
+                </div>
+                <button onclick="logout()" class="btn btn-secondary">
+                    <i data-lucide="log-out"></i> Déconnexion
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="navbar">
+            <button onclick="showTab('dashboard')" class="nav-item active" data-tab="dashboard">
+                <i data-lucide="trending-up"></i> Tableau de bord
+            </button>
+            <button onclick="showTab('matieres')" class="nav-item" data-tab="matieres">
+                <i data-lucide="book-open"></i> Matières
+            </button>
+            <button onclick="showTab('devoirs')" class="nav-item" data-tab="devoirs">
+                <i data-lucide="check"></i> Devoirs
+            </button>
+            <button onclick="showTab('emploi')" class="nav-item" data-tab="emploi">
+                <i data-lucide="calendar"></i> Emploi du temps
+            </button>
+            <button onclick="showTab('revisions')" class="nav-item" data-tab="revisions">
+                <i data-lucide="target"></i> Révisions
+            </button>
+            <button onclick="showTab('objectifs')" class="nav-item" data-tab="objectifs">
+                <i data-lucide="flag"></i> Objectifs
+            </button>
+            <button onclick="showTab('stats')" class="nav-item" data-tab="stats">
+                <i data-lucide="award"></i> Statistiques
+            </button>
+        </nav>
+
+        <!-- Contenu principal -->
+        <main class="main-content">
+            <!-- Dashboard -->
+            <div id="dashboardTab" class="tab-content active">
+                <h2>Tableau de bord</h2>
+                
+                <!-- Bouton test email (à retirer en production) -->
+                <button onclick="envoyerEmailTest()" class="btn btn-secondary" style="margin-bottom: 20px;">
+                    📧 Tester l'envoi d'email
+                </button>
+                
+                <div id="motivationCard" class="motivation-card"></div>
+                <div id="statsCards" class="stats-grid"></div>
+                <div id="upcomingDevoirs" class="card"></div>
+                <div id="startGuide" class="guide-card"></div>
+            </div>
+
+            <!-- Matières -->
+            <div id="matieresTab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Mes Matières</h2>
+                    <button onclick="showAddMatiereForm()" class="btn btn-primary">
+                        <i data-lucide="plus"></i> Ajouter
+                    </button>
+                </div>
+                <div id="addMatiereForm" class="card" style="display: none;">
+                    <h3>Nouvelle matière</h3>
+                    <div class="form-grid">
+                        <input type="text" id="matiereNom" placeholder="Nom de la matière" class="input">
+                        <input type="color" id="matiereCouleur" value="#3B82F6" class="input-color">
+                        <input type="number" id="matiereCoef" placeholder="Coefficient" value="1" min="1" class="input">
+                    </div>
+                    <button onclick="ajouterMatiere()" class="btn btn-success">Enregistrer</button>
+                </div>
+                <div id="matieresList" class="grid-3"></div>
+            </div>
+
+            <!-- Devoirs -->
+            <div id="devoirsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Mes Devoirs</h2>
+                    <button onclick="showAddDevoirForm()" class="btn btn-primary">
+                        <i data-lucide="plus"></i> Ajouter
+                    </button>
+                </div>
+                <div id="addDevoirForm" class="card" style="display: none;">
+                    <h3>Nouveau devoir</h3>
+                    <div class="form-grid">
+                        <select id="devoirMatiere" class="input"></select>
+                        <input type="text" id="devoirTitre" placeholder="Titre du devoir" class="input">
+                        <input type="date" id="devoirDate" class="input">
+                        <input type="number" id="devoirNoteMax" placeholder="Note max" value="20" class="input">
+                    </div>
+                    <button onclick="ajouterDevoir()" class="btn btn-success">Enregistrer</button>
+                </div>
+                <div id="devoirsList"></div>
+            </div>
+
+            <!-- Emploi du temps -->
+            <div id="emploiTab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Emploi du temps</h2>
+                    <button onclick="showAddCoursForm()" class="btn btn-primary">
+                        <i data-lucide="plus"></i> Ajouter un cours
+                    </button>
+                </div>
+                <div id="addCoursForm" class="card" style="display: none;">
+                    <h3>Nouveau cours</h3>
+                    <div class="form-grid">
+                        <select id="coursJour" class="input">
+                            <option value="Lundi">Lundi</option>
+                            <option value="Mardi">Mardi</option>
+                            <option value="Mercredi">Mercredi</option>
+                            <option value="Jeudi">Jeudi</option>
+                            <option value="Vendredi">Vendredi</option>
+                            <option value="Samedi">Samedi</option>
+                            <option value="Dimanche">Dimanche</option>
+                        </select>
+                        <input type="time" id="coursHeure" class="input">
+                        <select id="coursMatiere" class="input"></select>
+                        <input type="text" id="coursSalle" placeholder="Salle" class="input">
+                    </div>
+                    <button onclick="ajouterCours()" class="btn btn-success">Enregistrer</button>
+                </div>
+                <div id="emploiList"></div>
+            </div>
+
+            <!-- Révisions -->
+            <div id="revisionsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Planning de révisions</h2>
+                    <button onclick="showAddRevisionForm()" class="btn btn-primary">
+                        <i data-lucide="plus"></i> Planifier
+                    </button>
+                </div>
+                <div id="addRevisionForm" class="card" style="display: none;">
+                    <h3>Nouvelle révision</h3>
+                    <div class="form-grid">
+                        <select id="revisionMatiere" class="input"></select>
+                        <input type="date" id="revisionDate" class="input">
+                        <input type="time" id="revisionHeure" class="input" value="14:00">
+                        <input type="number" id="revisionDuree" placeholder="Durée (min)" value="60" class="input">
+                        <input type="text" id="revisionSujet" placeholder="Sujet" class="input" style="grid-column: span 2;">
+                    </div>
+                    <button onclick="ajouterRevision()" class="btn btn-success">Enregistrer</button>
+                </div>
+                <div id="revisionsList"></div>
+            </div>
+
+            <!-- Objectifs -->
+            <div id="objectifsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Mes Objectifs</h2>
+                    <button onclick="showAddObjectifForm()" class="btn btn-primary">
+                        <i data-lucide="plus"></i> Ajouter
+                    </button>
+                </div>
+                <div id="addObjectifForm" class="card" style="display: none;">
+                    <h3>Nouvel objectif</h3>
+                    <div class="form-grid">
+                        <input type="text" id="objectifTitre" placeholder="Titre de l'objectif" class="input" style="grid-column: span 2;">
+                        <select id="objectifMatiere" class="input">
+                            <option value="">Général</option>
+                        </select>
+                        <input type="date" id="objectifDate" class="input">
+                        <input type="number" id="objectifCible" placeholder="Note cible (ex: 15)" class="input" step="0.5" max="20">
+                    </div>
+                    <button onclick="ajouterObjectif()" class="btn btn-success">Enregistrer</button>
+                </div>
+                <div id="objectifsList"></div>
+            </div>
+
+            <!-- Statistiques -->
+            <div id="statsTab" class="tab-content">
+                <h2>Statistiques</h2>
+                <div id="statsContent"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <!-- Application JS -->
+    <script src="app.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+
+    <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>EduManager</h3>
+                    <p>Votre gestionnaire scolaire personnel</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Liens rapides</h4>
+                    <ul>
+                        <li><a href="#" onclick="showTab('dashboard')">Tableau de bord</a></li>
+                        <li><a href="#" onclick="showTab('matieres')">Matières</a></li>
+                        <li><a href="#" onclick="showTab('devoirs')">Devoirs</a></li>
+                        <li><a href="#" onclick="showTab('stats')">Statistiques</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>📧 <a href="mailto:nexoragency0@gmail.com">nexoragency0@gmail.com</a></p>
+                    <p>🌐 <a href="https://pape-djibril-ndiaye.github.io/pholio/">https://pape-djibril-ndiaye.github.io/pholio/</a></p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Réseaux sociaux</h4>
+                  <p><a href="https://wa.me/221761408000" class="contact-link" target="_blank">WhatsApp</a></p>
+                  <p><a href="https://github.com/pape-djibril-ndiaye" class="contact-link" target="_blank">GitHub</a></p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2026 EduManager. Tous droits réservés.</p>
+                <p class="signature">Développé avec ❤️ par <strong>Pape Djibril Ndiaye</strong></p>
+            </div>
+        </footer>
+</body>
+</html>
